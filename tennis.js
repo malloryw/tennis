@@ -1,114 +1,96 @@
 var fs = require("fs");
-var teams = require("./teams.json");
-var Team1 = teams.Team1;
-var Team2 = teams.Team2;
+
+var Team = require("./Team.js")
+var Player = require("./Player.js");
+var Team1, Team2;
 
 var maxSets = 3; //best out of #
 var maxGames = 6;
-var points = [0,15,30,40,"Deuce","AD"];
 
-var Score = {
-    Team1: {
-        point:0,
-        game:0,
-        set:0,
-        sets : [0,0,0]
-    },
-    Team2: {
-        point:0,
-        game:0,
-        set:0,
-        sets : [0,0,0]
-    }
-};
-
-function getTeamPoint(team){
-    return Score[team].point
-}
-
-function getTeamGame(team){
-    return Score[team].game;
-}
-
-function getTeamSet(team){
-    return Score[team].set;
-}
-
-function getTeamSets(team){
-    return Score[team].sets;
+function init(){
+    var t1p1, t1p2, t2p1, t2p2;
+    t1p1 = new Player("Mallory", "right", 1, 0.7, 0.8, 0.75);
+    t2p2 = new Player("Amanda", "left", 2, 0.8, 0.9, 0.8);
+    t2p1 = new Player("Larissa", "right", 2, 0.5, 0.85, 0.8);
+    t2p2 = new Player("Sahana", "left", 1, 0.8, 0.9, 0.85);
+    Team1 = new Team("A&M", t1p1, t1p2);
+    Team2 = new Team("L&S", t2p1, t2p2);
 }
 
 function coinFlip(){
     //determine which team goes first
     var num = Math.random();
     var team;
-    if (num > 0.5) team = "Team1";
-    else team = "Team2";
-    console.log("%s wins the coin toss and serves first", team);
+    if (num > 0.5) team = Team1;
+    else team = Team2;
+    console.log("%s wins the coin toss and serves first", team.getName());
     return team;
 }
 
-function getJargonScore(point){
-    if (point == 0) return "0";
-    if (point == 1) return "15";
-    if (point == 2) return "30";
-    if (point == 3) return "40";
-}
-
-function getScore(serveTeam){
-    var t1Indicator, t2Indicator, t1Point, t2Point;
-    if (serveTeam == "Team1"){
-        t1Indicator = "*", t2Indicator = " ";
-    } else{
-        t1Indicator = " ", t2Indicator = "*";
-    }
-    t1Point = getJargonScore(Score.Team1.point);
-    t2Point = getJargonScore(Score.Team2.point);
-    var str = "Score:\t" + t1Indicator + " Team1: " + t1Point;
-    str += "\n\t" + t2Indicator + " Team2: " + t2Point;
-    str += "\n";
-    console.log(str);
-}
+// function getScore(serveTeam){
+//     var t1Indicator, t2Indicator, t1Point, t2Point;
+//     if (serveTeam == "Team1"){
+//         t1Indicator = "*", t2Indicator = " ";
+//     } else{
+//         t1Indicator = " ", t2Indicator = "*";
+//     }
+//     t1Point = getJargonScoreByTeam("Team1");
+//     t2Point = getJargonScoreByTeam("Team2");
+//     var str = "Score:\t" + t1Indicator + " Team1: " + t1Point;
+//     str += "\n\t" + t2Indicator + " Team2: " + t2Point;
+//     str += "\n";
+//     console.log(str);
+// }
 
 function getScoreBoard(serveTeam, adTeam1, adTeam2){
     var lines = "";
     var t1Indicator, t2Indicator;
-    var t1Point = getJargonScore(getTeamPoint("Team1")),
-        t2Point = getJargonScore(getTeamPoint("Team2"));
+    var t1Point = Team1.getJargonPoint();
+        t2Point = Team2.getJargonPoint();
     for (var s=0;s<maxSets;s++){
         lines += "--";
     }
     var str = "\tPoint\tSets\n";
     str += "\t----\t-" + lines;
     
-    if (serveTeam == "Team1"){
+    if (serveTeam.getName() == Team1.getName()){
         t1Indicator = "*", t2Indicator = " ";
     } else{
         t1Indicator = " ", t2Indicator = "*";
     }
     str += "\n"
     
-    str += t1Indicator + " Team1";
-    str +=  " |";
+    str += t1Indicator + " " + Team1.getName();
+    str +=  "\t|";
     if (t1Point.toString().length == 2) str += t1Point;
     else if(t1Point.toString().length ==1) str += " " + t1Point;
-    //AD
-    str += "|\t";
+    if (adTeam1){
+        str += "|AD  ";
+    } else {
+        str += "|    ";
+    }
     for (var s=0; s<maxSets;s++){
-        str += "|" + getTeamSets("Team1")[s];
+        var x = Team1.getNthSetScore(s);
+        str += "|";
+        str += (x != null) ? x : 0;
     }
     str += "|";
 
     str += "\n\t----\t-" + lines;
     str += "\n";
-    str += t2Indicator + " Team2";
-    str += " |";
+    str += t2Indicator + " " + Team2.getName();
+    str += "\t|";
     if (t2Point.toString().length == 2) str += t2Point;
     else if(t2Point.toString().length ==1) str += " " + t2Point;
-    //AD
-    str += "|\t";
+    if (adTeam2){
+        str += "|AD  ";
+    } else{
+        str += "|    ";
+    }
     for (var s=0; s<maxSets;s++){
-        str += "|" + getTeamSets("Team1")[s];
+        var x = Team2.getNthSetScore(s);
+        str += "|";
+        str += (x != null) ? x : 0;
     }
     str += "|";
 
@@ -127,63 +109,103 @@ function getServer(){
 }
 
 function getSide(){
-    var sum = Score.Team1.point + Score.Team2.point;
+    var sum = Team1.getCurrentPoint() + Team2.getCurrentPoint();
     var side;
     if (sum %2 == 0) side = "Right";
     else side = "Left";
 }
 
 function play(){
+    init();
     console.log("Tennis game started!");
     // console.log("Team 1 (%s & %s) vs. Team 2 (%s, %s)", Team1.player1.name, Team1.player2.name, Team2.player1.name, Team2.player2.name);
-    var serveTeam = coinFlip();
-    console.log(serveTeam);
-    var servePlayer = teams[serveTeam];
+    var serveTeam = coinFlip(),
+        nextServer;
     drawCourt();
     // while (Score.Team1.set < maxSets && Score.Team2.set < maxSets ){   
     // }
-    // while (Score.Team1.game < maxGames && Score.Team2.game < maxGames){
-    //     if (Score.Team1.game == 5 && Score.Team2.game == 5){
-    //         playTieBreker();
-    //     }
-    // }
-    while (Score.Team1.point < 4 && Score.Team2.point < 4 ){
-        // getScore(serveTeam);
+    while (Team1.getCurrentGame() < maxGames && Team2.getCurrentGame() < maxGames){
+        playGame(serveTeam);
+        nextServer = (serveTeam.getName()== Team1.getName()) ? Team2 : Team1;
+        serveTeam = nextServer;
+        if (Team1.getCurrentGame() == (maxGames-1) && Team2.getCurrentGame() == (maxGames-1)){
+            playTieBreaker55();
+        }
+
+    }
+    if (Team1.getCurrentGame() == maxGames){
+        Team1.wonSet();
+    } else {
+        Team2.wonSet();
+    }
+    getScoreBoard(serveTeam);
+    Team1.clearCurrentGame();
+    Team2.clearCurrentGame();
+}
+
+function playGame(serveTeam){
+    while (Team1.getCurrentPoint() < 4 && Team2.getCurrentPoint() < 4 ){
         getScoreBoard(serveTeam);
-        if (Score.Team1.point == 3 && Score.Team2.point == 3){
-            playDeuce();    
+        if (Team1.getCurrentPoint() == 3 && Team2.getCurrentPoint() == 3){
+            playDeuce(serveTeam);
         }
         else {
             playPoint();
         }   
     }
-    if (Score.Team1.point == 4){
-        Score.Team1.game++;
-    } else{
-        Score.Team2.game++;
+    if (Team1.getCurrentPoint() == 4){
+        Team1.wonGame();
+    } else {
+        Team2.wonGame();
     }
+    Team1.clearCurrentPoint();
+    Team2.clearCurrentPoint();
+    console.log("********** Game over **********\n");
 }
 
 function playPoint(){
     var num = Math.random();
     var winner;
     if (num > 0.5) {
-        winner = "Team1";
-        Score.Team1.point++;
+        winner = Team1;
+        Team1.wonPoint();
     }
     else {
-        winner = "Team2";
-        Score.Team2.point++;
+        winner = Team2
+        Team2.wonPoint();
     }
-    return winner;
+    return;
 }
 
-function playDeuce(){
+function playDeuce(serveTeam){
     console.log("DEUCE");
-
+    var t1 = 0, t2 = 0, num;
+    while (Math.abs(t1-t2) < 2){
+        num = Math.random();
+        if (num > 0.5){
+            t1++;
+        } else{
+            t2++;
+        }
+        if (t1 == (t2+1)){
+            getScoreBoard(serveTeam, 1, 0);
+        } else if (t2 == (t1+1)){
+            getScoreBoard(serveTeam, 0, 1);
+        } else if (t1 == t2){
+            getScoreBoard(serveTeam);
+        }
+    }
+    if (t1 > t2){
+        Team1.wonPoint();
+    } else{
+        Team2.wonPoint();
+    }
+    return;
 }
 
-function playTieBreaker(){
+function playTieBreaker55(){
+    console.log("5-5");
+    
 
 }
 
