@@ -40,7 +40,7 @@ Team.prototype.getCurrentGame = function(){
 }
 
 Team.prototype.getCurrentSet = function(){
-	return this.getCurrentSet;
+	return this.currentSet;
 }
 
 Team.prototype.getCurrentSetNumber = function(){
@@ -56,8 +56,9 @@ Team.prototype.clearCurrentGame = function(){
 }
 
 Team.prototype.clearCurrentSet = function(){
-	this.currentSet = 0;
+	// this.currentSet = 0;
 	this.currentSetNumber++;
+	this.scoreHistory.push(0);
 }
 
 Team.prototype.wonPoint = function(){
@@ -69,7 +70,7 @@ Team.prototype.wonGame = function(){
 	this.scoreHistory[this.currentSetNumber] = this.currentGame;
 }
 
-Team.prototype.wonSet = function(score){
+Team.prototype.wonSet = function(){
 	this.currentSet++;
 }
 

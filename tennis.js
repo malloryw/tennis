@@ -27,21 +27,6 @@ function coinFlip(){
     return team;
 }
 
-// function getScore(serveTeam){
-//     var t1Indicator, t2Indicator, t1Point, t2Point;
-//     if (serveTeam == "Team1"){
-//         t1Indicator = "*", t2Indicator = " ";
-//     } else{
-//         t1Indicator = " ", t2Indicator = "*";
-//     }
-//     t1Point = getJargonScoreByTeam("Team1");
-//     t2Point = getJargonScoreByTeam("Team2");
-//     var str = "Score:\t" + t1Indicator + " Team1: " + t1Point;
-//     str += "\n\t" + t2Indicator + " Team2: " + t2Point;
-//     str += "\n";
-//     console.log(str);
-// }
-
 function getScoreBoard(serveTeam, adTeam1, adTeam2){
     var lines = "";
     var t1Indicator, t2Indicator;
@@ -122,14 +107,25 @@ function play(){
     var serveTeam = coinFlip(),
         nextServer;
     drawCourt();
-    // while (Score.Team1.set < maxSets && Score.Team2.set < maxSets ){   
-    // }
+    // playSet(serveTeam);
+    while (Team1.getCurrentSet() + Team2.getCurrentSet() < maxSets ){
+        playSet(serveTeam);
+        console.log(Team1.getCurrentSet(), Team2.getCurrentSet());
+        
+        Team1.clearCurrentSet();
+        Team2.clearCurrentSet();
+        
+    }
+}
+
+function playSet(serveTeam){
     while (Team1.getCurrentGame() < maxGames && Team2.getCurrentGame() < maxGames){
         playGame(serveTeam);
         nextServer = (serveTeam.getName()== Team1.getName()) ? Team2 : Team1;
         serveTeam = nextServer;
         if (Team1.getCurrentGame() == (maxGames-1) && Team2.getCurrentGame() == (maxGames-1)){
-            playTieBreaker55();
+            getScoreBoard(serveTeam);//
+            playTieBreaker55(serveTeam);
         }
 
     }
@@ -145,7 +141,7 @@ function play(){
 
 function playGame(serveTeam){
     while (Team1.getCurrentPoint() < 4 && Team2.getCurrentPoint() < 4 ){
-        getScoreBoard(serveTeam);
+        // getScoreBoard(serveTeam);
         if (Team1.getCurrentPoint() == 3 && Team2.getCurrentPoint() == 3){
             playDeuce(serveTeam);
         }
@@ -171,14 +167,13 @@ function playPoint(){
         Team1.wonPoint();
     }
     else {
-        winner = Team2
+        winner = Team2;
         Team2.wonPoint();
     }
     return;
 }
 
 function playDeuce(serveTeam){
-    console.log("DEUCE");
     var t1 = 0, t2 = 0, num;
     while (Math.abs(t1-t2) < 2){
         num = Math.random();
@@ -188,11 +183,11 @@ function playDeuce(serveTeam){
             t2++;
         }
         if (t1 == (t2+1)){
-            getScoreBoard(serveTeam, 1, 0);
+            // getScoreBoard(serveTeam, 1, 0);
         } else if (t2 == (t1+1)){
-            getScoreBoard(serveTeam, 0, 1);
+            // getScoreBoard(serveTeam, 0, 1);
         } else if (t1 == t2){
-            getScoreBoard(serveTeam);
+            // getScoreBoard(serveTeam);
         }
     }
     if (t1 > t2){
@@ -203,10 +198,27 @@ function playDeuce(serveTeam){
     return;
 }
 
-function playTieBreaker55(){
+function playTieBreaker55(serveTeam){
     console.log("5-5");
-    
+    //t1=5, t2=5;
+    playGame(serveTeam);
+    playGame(serveTeam);
+    if (Team1.getCurrentGame() == maxGames && Team2.getCurrentGame() == maxGames){
+        playTieBreaker();
+    } else{
+        if (Team1.getCurrentGame() == (maxGames+1)){
+            Team1.wonSet();
+        } else{
+            Team2.wonSet();
+        }
+        Team1.clearCurrentGame();
+        Team2.clearCurrentGame();
+    }
+    return;
+}
 
+function playTieBreaker(serveTeam){
+    console.log("Tiebreaker 6-6");
 }
 
 play();
