@@ -1,7 +1,7 @@
 {
     "Team1" : {
         "player1": {
-            "name": "Mallory",
+            "name": "AA",
             "position": "right",
             "serve_order": 1,
             "first_serve_pct": 0.7,
@@ -9,7 +9,7 @@
             "stroke_pct": 0.75
         },
         "player2": {
-            "name": "Amanda",
+            "name": "BB",
             "position": "left",
             "serve_order": 2,
             "first_serve_pct": 0.8,
@@ -19,7 +19,7 @@
     },
     "Team2" : {
         "player1": {
-            "name": "Larissa",
+            "name": "CC",
             "position": "right",
             "serve_order":2,
             "first_serve_pct":0.5,
@@ -27,7 +27,7 @@
             "stroke_pct": 0.8
         },
         "player2": {
-            "name": "Sahana",
+            "name": "DD",
             "position": "left",
             "serve_order":1,
             "first_serve_pct": 0.8,
